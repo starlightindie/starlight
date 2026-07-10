@@ -1,0 +1,1 @@
+export const animateSwipe = (root: HTMLElement, direction: 'next' | 'previous', enabled: boolean): void => { if (!enabled) return; root.animate([{ transform: `translate3d(0, ${direction === 'next' ? '4rem' : '-4rem'}, 0)`, opacity: 0.86 }, { transform: 'translate3d(0,0,0)', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' }); };
