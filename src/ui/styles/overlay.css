@@ -1,0 +1,21 @@
+html.ys-active-page body > *:not(.ys-root) { visibility: hidden !important; }
+.ys-root { position: fixed; inset: 0; z-index: 2147483647; color: white; background: radial-gradient(circle at 50% 15%, #242424, #050505 68%); font: 500 16px/1.4 Inter, Roboto, system-ui, sans-serif; overflow: hidden; touch-action: none; }
+.ys-stage { position: absolute; inset: 0; display: grid; place-items: center; }
+.ys-video-slot { width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9; border-radius: clamp(0px, 2vw, 24px); background: #000; box-shadow: 0 24px 80px #000a; }
+.ys-actions { position: absolute; right: clamp(1rem, 4vw, 3rem); bottom: 24%; display: grid; gap: .9rem; }
+.ys-actions button, .ys-controls button, .ys-description-button { border: 0; color: white; background: color-mix(in srgb, #fff 16%, transparent); backdrop-filter: blur(18px); border-radius: 999px; min-width: 3rem; min-height: 3rem; cursor: pointer; transition: transform .18s ease, background .18s ease; }
+.ys-actions button:hover, .ys-controls button:hover { transform: translate3d(0,-2px,0) scale(1.04); background: color-mix(in srgb, #fff 24%, transparent); }
+.ys-meta { position: absolute; left: clamp(1rem, 5vw, 4rem); bottom: clamp(5rem, 10vh, 8rem); max-width: min(44rem, calc(100vw - 9rem)); text-shadow: 0 2px 16px #000; }
+.ys-meta h1 { margin: .3rem 0; font-size: clamp(1.4rem, 3vw, 3rem); line-height: 1.05; }
+.ys-channel { background: transparent; color: white; border: 0; font-weight: 800; font-size: 1rem; }
+.ys-controls { position: absolute; left: 50%; bottom: 1.4rem; transform: translateX(-50%); display: flex; align-items: center; gap: .6rem; width: min(58rem, calc(100vw - 2rem)); }
+.ys-controls progress { flex: 1; accent-color: #ff0033; height: .45rem; }
+.ys-panel { position: absolute; background: color-mix(in srgb, #101010 84%, transparent); backdrop-filter: blur(24px); box-shadow: 0 0 80px #0008; transition: transform .28s cubic-bezier(.2,.8,.2,1); padding: 1.2rem; overflow: auto; }
+.ys-comments { inset: 0 0 0 auto; width: min(28rem, 92vw); transform: translate3d(100%,0,0); }
+.ys-description { inset: auto 0 0 0; max-height: 48vh; transform: translate3d(0,100%,0); border-radius: 24px 24px 0 0; }
+.ys-show-comments .ys-comments, .ys-show-description .ys-description { transform: translate3d(0,0,0); }
+.ys-comments-hidden [data-act="comments"], .ys-share-hidden [data-act="share"] { display: none; }
+.ys-reduced-motion, .ys-reduced-motion * { transition: none !important; animation: none !important; }
+@media (orientation: portrait) { .ys-video-slot { width: 100vw; height: 100vh; aspect-ratio: auto; border-radius: 0; } .ys-meta { bottom: 7rem; } }
+@media (prefers-reduced-motion: reduce) { .ys-root, .ys-root * { transition: none !important; animation: none !important; } }
+@media (prefers-contrast: more) { .ys-root { background: #000; } .ys-actions button, .ys-controls button { outline: 2px solid #fff; } }
