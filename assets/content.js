@@ -15,14 +15,10 @@
   };
 
   const STYLE = `
-html.ys-active-page { background: #000; }
-html.ys-active-page ytd-app { opacity: 0 !important; pointer-events: none !important; }
+html.ys-active-page body > *:not(.ys-root) { visibility: hidden !important; }
 .ys-root { position: fixed; inset: 0; z-index: 2147483647; color: white; background: radial-gradient(circle at 50% 15%, #242424, #050505 68%); font: 500 16px/1.4 Inter, Roboto, system-ui, sans-serif; overflow: hidden; touch-action: none; }
 .ys-stage { position: absolute; inset: 0; display: grid; place-items: center; }
 .ys-video-shell { width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9; border-radius: clamp(0px, 2vw, 24px); background: #000; box-shadow: 0 24px 80px #000a; overflow: hidden; display: grid; place-items: center; }
-.ys-video-shell > * { width: 100% !important; height: 100% !important; max-width: 100% !important; max-height: 100% !important; }
-.ys-video-shell video { width: 100% !important; height: 100% !important; object-fit: contain !important; }
-.ys-loading { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 1rem; letter-spacing: .02em; opacity: .86; }
 .ys-actions { position: absolute; right: clamp(1rem, 4vw, 3rem); bottom: 24%; display: grid; gap: .9rem; }
 .ys-actions button, .ys-controls button, .ys-description-button { border: 0; color: white; background: color-mix(in srgb, #fff 16%, transparent); backdrop-filter: blur(18px); border-radius: 999px; min-width: 3rem; min-height: 3rem; cursor: pointer; transition: transform .18s ease, background .18s ease; }
 .ys-actions button:hover, .ys-controls button:hover { transform: translate3d(0,-2px,0) scale(1.04); background: color-mix(in srgb, #fff 24%, transparent); }
@@ -77,9 +73,6 @@ html.ys-active-page ytd-app { opacity: 0 !important; pointer-events: none !impor
       this.dragging = false;
       this.wheelLocked = false;
       this.observer = null;
-      this.playerNode = null;
-      this.playerPlaceholder = null;
-      this.renderQueued = false;
     }
 
     async start() {
@@ -104,7 +97,6 @@ html.ys-active-page ytd-app { opacity: 0 !important; pointer-events: none !impor
       }
       this.queue = [...this.queue, ...readRecommendations()].filter((item, index, all) => all.findIndex(other => other.videoId === item.videoId) === index);
       if (!this.overlay) this.mountOverlay();
-      this.attachPlayerWhenReady();
       this.render();
       this.observe();
     }
@@ -113,37 +105,15 @@ html.ys-active-page ytd-app { opacity: 0 !important; pointer-events: none !impor
       this.overlay = document.createElement('section');
       this.overlay.className = 'ys-root';
       this.overlay.setAttribute('aria-label', 'YouTube Swipe immersive player');
-      this.overlay.innerHTML = `<div class="ys-stage"><div class="ys-video-shell"><div class="ys-loading">Loading YouTube player…</div></div><div class="ys-actions"><button data-act="like" aria-label="Like">♥</button><button data-act="dislike" aria-label="Dislike">👍</button><button data-act="comments" aria-label="Open comments">💬</button><button data-act="share" aria-label="Share">↗</button><button data-act="save" aria-label="Save">＋</button></div><div class="ys-meta"></div><div class="ys-controls"><button data-act="play" aria-label="Play or pause">▶</button><button data-act="previous" aria-label="Previous video">↑</button><button data-act="next" aria-label="Next video">↓</button><progress value="0" max="1"></progress><button data-act="mute">M</button><button data-act="pip">PiP</button><button data-act="full">⛶</button></div></div><aside class="ys-panel ys-comments"><button data-act="close-comments">Close</button><div>Comments remain powered by YouTube.</div></aside><aside class="ys-panel ys-description"><button data-act="close-description">Close</button><div class="ys-description-content"></div></aside>`;
+      this.overlay.innerHTML = `<div class="ys-stage"><div class="ys-video-shell" aria-hidden="true"></div><div class="ys-actions"><button data-act="like" aria-label="Like">♥</button><button data-act="dislike" aria-label="Dislike">👍</button><button data-act="comments" aria-label="Open comments">💬</button><button data-act="share" aria-label="Share">↗</button><button data-act="save" aria-label="Save">＋</button></div><div class="ys-meta"></div><div class="ys-controls"><button data-act="play" aria-label="Play or pause">▶</button><button data-act="previous" aria-label="Previous video">↑</button><button data-act="next" aria-label="Next video">↓</button><progress value="0" max="1"></progress><button data-act="mute">M</button><button data-act="pip">PiP</button><button data-act="full">⛶</button></div></div><aside class="ys-panel ys-comments"><button data-act="close-comments">Close</button><div>Comments remain powered by YouTube.</div></aside><aside class="ys-panel ys-description"><button data-act="close-description">Close</button><div class="ys-description-content"></div></aside>`;
       this.overlay.addEventListener('click', event => this.handleClick(event));
       this.overlay.addEventListener('pointerdown', event => this.onPointerDown(event));
       this.overlay.addEventListener('pointerup', event => this.onPointerUp(event));
       this.overlay.addEventListener('pointercancel', () => { this.dragging = false; });
       window.addEventListener('wheel', event => this.onWheel(event), { passive: false });
       window.addEventListener('keydown', event => this.onKeyDown(event));
-      document.body.append(this.overlay);
       document.documentElement.classList.add('ys-active-page');
-    }
-
-
-    attachPlayerWhenReady() {
-      const shell = qs('.ys-video-shell', this.overlay);
-      if (!shell) return;
-      const candidate = qs('#player-container-inner ytd-player') || qs('#player-container ytd-player') || qs('ytd-player') || qs('#movie_player');
-      if (!candidate) {
-        setTimeout(() => this.attachPlayerWhenReady(), 250);
-        return;
-      }
-      if (this.playerNode === candidate && shell.contains(candidate)) return;
-      this.playerNode = candidate;
-      this.playerPlaceholder = document.createComment('youtube-swipe-player-placeholder');
-      candidate.parentNode?.insertBefore(this.playerPlaceholder, candidate);
-      shell.replaceChildren(candidate);
-      candidate.removeAttribute('hidden');
-      candidate.style.width = '100%';
-      candidate.style.height = '100%';
-      candidate.style.maxWidth = '100%';
-      candidate.style.maxHeight = '100%';
-      qs('video', candidate)?.play?.().catch?.(() => undefined);
+      document.body.append(this.overlay);
     }
 
     render() {
@@ -231,16 +201,7 @@ html.ys-active-page ytd-app { opacity: 0 !important; pointer-events: none !impor
 
     observe() {
       this.observer?.disconnect();
-      this.observer = new MutationObserver(mutations => {
-        if (mutations.every(mutation => this.overlay?.contains(mutation.target))) return;
-        if (this.renderQueued) return;
-        this.renderQueued = true;
-        requestAnimationFrame(() => {
-          this.renderQueued = false;
-          this.attachPlayerWhenReady();
-          this.render();
-        });
-      });
+      this.observer = new MutationObserver(() => this.render());
       this.observer.observe(document.body, { childList: true, subtree: true });
     }
 
@@ -252,12 +213,6 @@ html.ys-active-page ytd-app { opacity: 0 !important; pointer-events: none !impor
 
     destroy() {
       this.observer?.disconnect();
-      if (this.playerNode && this.playerPlaceholder?.parentNode) {
-        this.playerPlaceholder.parentNode.insertBefore(this.playerNode, this.playerPlaceholder);
-        this.playerPlaceholder.remove();
-      }
-      this.playerNode = null;
-      this.playerPlaceholder = null;
       this.overlay?.remove();
       this.overlay = null;
       document.documentElement.classList.remove('ys-active-page');
