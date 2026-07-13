@@ -13,18 +13,7 @@ YouTube Swipe is a Manifest V3 Chromium extension that turns regular YouTube wat
 - Popup and options pages for settings.
 - Strict TypeScript, Vite, ES modules, and modular source layout.
 
-## Install in Chrome from this folder
-
-1. Download or clone this repository.
-2. Open `chrome://extensions` in Chrome.
-3. Enable **Developer mode**.
-4. Click **Load unpacked**.
-5. Select the repository root folder, for example `starlight-main`.
-6. Open a regular YouTube watch URL such as `https://www.youtube.com/watch?v=...`.
-
-The repository root is directly loadable because `manifest.json` references committed JavaScript files in `assets/`.
-
-## Development build
+## Development
 
 ```bash
 npm install
@@ -32,7 +21,14 @@ npm run typecheck
 npm run build
 ```
 
-If you build with Vite, you can also load the generated `dist` directory in Chrome.
+## Install locally
+
+1. Run `npm run build`.
+2. Open `chrome://extensions` in any Chromium browser.
+3. Enable **Developer mode**.
+4. Click **Load unpacked**.
+5. Select this repository's `dist` directory.
+6. Open a regular YouTube watch URL.
 
 ## Architecture
 
@@ -42,4 +38,3 @@ If you build with Vite, you can also load the generated `dist` directory in Chro
 - `src/content/recommendations.ts` builds an infinite-feeling queue from page recommendations.
 - `src/content/state.ts` provides centralized app state.
 - `src/popup` and `src/options` expose user settings.
-- `assets/content.js`, `assets/background.js`, `assets/popup.js`, and `assets/options.js` are committed browser-loadable JavaScript entry points so Chrome can load the unpacked repository root without a build step.
